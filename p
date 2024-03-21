@@ -68,3 +68,119 @@ app.controller('UserController', function ($scope) {
         $scope.users.splice($scope.users.indexOf(user), 1);
     };
 });
+
+
+
+
+9 prog
+
+
+<!DOCTYPE html>
+<html ng-app="employeeApp">
+
+<head>
+  <title>Employee List</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+
+<body ng-controller="EmployeeController">
+
+  <h2>Employee List</h2>
+
+  <label>Search by Name:</label>
+  <input type="text" ng-model="searchName" />
+  
+  <label>Search by Salary:</label>
+  <input type="number" ng-model="searchSalary" />
+
+  <button ng-click="searchEmployees()">SearchName</button>
+  <button ng-click="searchEmployees1()">SearchSalary</button>
+  <ul>
+    <li ng-repeat="employee in filteredEmployees">
+      {{ employee.name }} - {{ employee.salary}}
+    </li>
+  </ul>
+
+  <script src="ddd.js">
+    
+  </script>
+
+</body>
+
+</html>
+angular.module('employeeApp', [])
+      .controller('EmployeeController', function ($scope) {
+        $scope.employees = [
+          { name: 'Rahul K Prabhu', salary: 50000 },
+          { name: 'Rakshan', salary: 60000 },
+          { name: 'Makvin', salary: 70000 },
+          { name: 'Nikola Tesla', salary: 55000 },
+          { name: 'Anoop Prabhu', salary: 80000 }
+        ];
+
+        $scope.filteredEmployees = $scope.employees;
+
+        $scope.searchEmployees = function () {
+          $scope.filteredEmployees = $scope.employees.filter(function (employee) {
+            return (
+              (employee.name.toLowerCase().includes($scope.searchName.toLowerCase()) || !$scope.searchName) &&
+              (employee.salary == $scope.searchSalary || !$scope.searchSalary)
+            ); 
+          });
+        };
+        
+
+        $scope.searchEmployees1 = function () {
+          $scope.filteredEmployees = $scope.employees.filter(function (employee) {
+            return (
+              
+              (employee.salary == $scope.searchSalary || !$scope.searchSalary)
+            ); 
+          });
+        };
+      });
+
+
+
+
+
+      12 prog
+
+      <!DOCTYPE html>
+<html >
+<head>
+    <title>AngularJS Date Display</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-app="myApp">
+
+<div ng-controller="myController">
+    <h2>Date Display</h2>
+
+    <label>Date Format:
+        <select ng-model="selectedFormat" ng-change="updateDate()">
+            <option value="fullDate">Full Date</option>
+            <option value="shortDate">Short Date</option>
+            <option value="mediumTime">Medium Time</option>
+            <option value="shortTime">short Time</option>
+            <option value="yyyy-MM-dd HH:mm:ss">Custom Format (yyyy-MM-dd     HH:mm:ss)</option>
+        </select>
+    </label>
+
+    <p>Selected Date Format: {{ selectedFormat }}</p>
+    <p>Formatted Date: {{ formattedDate }}</p>
+</div>
+<script src="program12.js"></script>
+
+</body>
+</html>
+var app = angular.module('myApp', []);
+app.controller('myController', function ($scope, $filter) {
+    $scope.selectedFormat = 'fullDate'; // Default date format
+    $scope.updateDate = function () {
+        var currentDate = new Date();
+        $scope.formattedDate = $filter('date')(currentDate, $scope.selectedFormat);
+    };
+    // Initial date update
+    $scope.updateDate();
+});
