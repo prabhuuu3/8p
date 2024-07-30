@@ -1,54 +1,26 @@
-import numpy as np 
-X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float) 
-y = np.array(([92], [86], [89]), dtype=float)  
-X = X/np.amax(X,axis=0)     
-y = y/100
+import pandas as pd
+import matplotlib.pyplot as plt
+from collections import Counter
 
-def sigmoid (x): 
-    return 1/(1 + np.exp(-x)) 
+# Load the dataset
+mtcars =pd.read_csv(r'C:\Users\HP\Downloads\mtcars.csv') 
 
+# Plotting the histogram
+histogram = Counter(min(mpg // 10 * 10, 90) for mpg in mtcars['mpg'])
+plt.bar([x + 5 for x in histogram.keys()],  # Shift bars right by 5
+        histogram.values(),                 # Give each bar its correct height
+        width=10,                           # Give each bar a width of 10
+        edgecolor='black')                 # Black edges for each bar
 
-def derivatives_sigmoid(x): 
-    return x * (1 - x) 
+plt.xticks([10 * i for i in range(6)])    # x-axis labels at 0, 10, ..., 50
 
+# Adding labels and title
+plt.xlabel('Miles per gallon (mpg)')
+plt.ylabel('Frequency')
+plt.title('Histogram of Miles per gallon (mpg)')
 
-epoch=5000 
-lr=0.1   
-inputlayer_neurons = 2   
-hiddenlayer_neurons = 3 
-output_neurons = 1  
-
-wh=np.random.uniform(size=(inputlayer_neurons,hiddenlayer_neurons))  
-
-bh=np.random.uniform(size=(1,hiddenlayer_neurons))  
- 
-wout=np.random.uniform(size=(hiddenlayer_neurons,output_neurons))  
-
-bout=np.random.uniform(size=(1,output_neurons))  
- 
-for i in range(epoch): 
-
-    hinp1=np.dot(X,wh) 
-    hinp=hinp1 + bh 
-    hlayer_act = sigmoid(hinp) 
-    outinp1=np.dot(hlayer_act,wout) 
-    outinp= outinp1+ bout 
-    output = sigmoid(outinp) 
-
-    EO = y-output 
-    outgrad = derivatives_sigmoid(output) 
-    d_output = EO* outgrad 
-    EH = d_output.dot(wout.T) 
- 
-    hiddengrad = derivatives_sigmoid(hlayer_act) 
-    d_hiddenlayer = EH * hiddengrad 
- 
-    wout += hlayer_act.T.dot(d_output) *lr 
-    wh += X.T.dot(d_hiddenlayer) *lr 
- 
-print("Input: \n" + str(X))  
-print("Actual Output: \n" + str(y)) 
-print("Predicted Output: \n" ,output) 
+# Displaying the plot
+plt.show()
 
 
 
@@ -57,7 +29,33 @@ print("Predicted Output: \n" ,output)
 
 
 
+import pandas as pd
+import numpy as np
+import re
 
+# Import the data into a DataFrame
+books_df = pd.read_csv('BL-Flickr-Images-Book.csv')
+
+# Drop irrelevant columns and set the index
+books_df.drop(columns=[
+    'Edition Statement', 'Corporate Author', 'Corporate Contributors', 
+    'Former owner', 'Engraver', 'Contributors', 'Issuance type', 'Shelfmarks'
+], inplace=True)
+books_df.set_index('Identifier', inplace=True)
+
+# Clean date of publication
+books_df['Date of Publication'] = books_df['Date of Publication'].apply(
+    lambda x: re.search(r'\d{4}', x).group() if isinstance(x, str) and re.search(r'\d{4}', x) else np.nan
+)
+
+# Clean place of publication
+books_df['Place of Publication'] = books_df['Place of Publication'].apply(
+    lambda x: 'London' if 'London' in x else 'Oxford' if 'Oxford' in x else 'Unknown'
+)
+
+# Display the cleaned DataFrame
+print("\nCleaned DataFrame:")
+print(books_df.head())
 
 
 
@@ -68,6 +66,33 @@ print("Predicted Output: \n" ,output)
 
 
 
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline 
+
+# Load the Iris dataset
+iris = load_iris()
+x = iris.data
+y = iris.target
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)  # Changed 'X' to 'x'
+
+# Create a pipeline with standardization and logistic regression 
+model = make_pipeline(StandardScaler(), LogisticRegression(C=1e4))
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Report the training accuracy
+training_accuracy = model.score(X_train, y_train) 
+print(f"Training Accuracy: {training_accuracy}")
+
+# Report the testing accuracy
+testing_accuracy = model.score(X_test, y_test)
+print(f"Testing Accuracy: {testing_accuracy}")
 
 
 
@@ -76,54 +101,32 @@ print("Predicted Output: \n" ,output)
 
 
 
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC 
 
+# Load the Iris dataset and split it
+X, y = load_iris(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Define hyperparameters
+hyperparams = [(0.5, C) for C in [0.01, 1, 10]]
 
+# Initialize variables for best accuracy
+best_accuracy, best_support_vectors = 0, None
 
+# Iterate over hyperparameters
+for gamma, C in hyperparams:
+    model = SVC(kernel='rbf', gamma=gamma, C=C)
+    model.fit(X_train, y_train)
+    
+    accuracy = model.score(X_test, y_test)
+    total_support_vectors = np.sum(model.n_support_)
+    
+    if accuracy > best_accuracy:
+        best_accuracy, best_support_vectors = accuracy, total_support_vectors
+    
+    print(f"Gamma: {gamma}, C: {C}, Accuracy: {accuracy:.3f}, Total Support Vectors: {total_support_vectors}")
 
-
-
-
-
-
-
-import pandas as pd 
- 
-data = pd.read_csv('enjoysport.csv') 
-concepts = data.iloc[:, :-1].values 
-target = data.iloc[:, -1].values 
-n=len(concepts[0])-1 
-specific_h = ['0'] * n  
-general_h = ['?'] * n 
-print("The initialization of the specific and general hypothesis ") 
-print(" S0:",specific_h,"\n G0:",general_h) 
- 
-def learn(concepts, target): 
-    specific_h = concepts[0].copy() 
-    general_h = [["?" for _ in range(len(specific_h))] for _ in range(len(specific_h))] 
-    for i, h in enumerate(concepts): 
-        if target[i] == "yes": 
-            print(f"\n the {i+1} training instance is Positive \n",concepts[i]) 
-            for x in range(len(specific_h)): 
-                if h[x] != specific_h[x]: 
-                    specific_h[x] = '?' 
-                    general_h[x][x] = '?' 
-        else: 
-            print(f"\nThe {i+1} training instance is Negative \n",concepts[i]) 
-            for x in range(len(specific_h)): 
-                if h[x] != specific_h[x]: 
-                    general_h[x][x] = specific_h[x] 
-                else: 
-                    general_h[x][x] = '?' 
- 
-        print(f"S{i+1}:\n", specific_h) 
-        print(f"G{i+1}:\n", general_h) 
- 
-    general_h = [h for h in general_h if h != ['?' for _ in range(len(specific_h))]] 
-    return specific_h, general_h 
- 
-s_final, g_final = learn(concepts, target) 
-print("\nThe Final Specific Hypothesis:") 
-print(s_final) 
-print("\nThe Final General Hypothesis:") 
-print(g_final)
+print(f"\nBest Accuracy: {best_accuracy:.3f}, Total Support Vectors: {best_support_vectors}")
