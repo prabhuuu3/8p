@@ -1,25 +1,411 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from collections import Counter
+prog 1
+import csv 
+with open('enjoysport.csv', 'r') as file: 
+    data = [row for row in csv.reader(file)] 
+    print("The total number of training instances are:",len(data)-1,'\n',data[1:]) 
+ 
+num_attribute = len(data[0])-1 
+ 
+# Initial hypothesis 
+hypothesis = ['0']*num_attribute 
+ 
+for i in range(0, len(data)): 
+    if data[i][num_attribute] == 'yes': 
+        for j in range(0, num_attribute): 
+            if hypothesis[j] == '0' or hypothesis[j] == data[i][j]: 
+                hypothesis[j] = data[i][j] 
+            else: 
+                hypothesis[j] = '?' 
+    print("\n The hypothesis for the training instance {} is : \n".format(i),hypothesis) 
+ 
+print("\n The Maximally specific hypothesis for the training instances is ", 
+hypothesis) 
 
-# Load the dataset
-mtcars =pd.read_csv(r'C:\Users\HP\Downloads\mtcars.csv') 
 
-# Plotting the histogram
-histogram = Counter(min(mpg // 10 * 10, 90) for mpg in mtcars['mpg'])
-plt.bar([x + 5 for x in histogram.keys()],  # Shift bars right by 5
-        histogram.values(),                 # Give each bar its correct height
-        width=10,                           # Give each bar a width of 10
-        edgecolor='black')                 # Black edges for each bar
 
-plt.xticks([10 * i for i in range(6)])    # x-axis labels at 0, 10, ..., 50
 
-# Adding labels and title
-plt.xlabel('Miles per gallon (mpg)')
-plt.ylabel('Frequency')
-plt.title('Histogram of Miles per gallon (mpg)')
 
-# Displaying the plot
+
+
+prog2
+import pandas as pd 
+ 
+data = pd.read_csv('enjoysport.csv') 
+concepts = data.iloc[:, :-1].values 
+target = data.iloc[:, -1].values 
+n=len(concepts[0])-1 
+specific_h = ['0'] * n  
+general_h = ['?'] * n 
+print("The initialization of the specific and general hypothesis ") 
+print(" S0:",specific_h,"\n G0:",general_h) 
+ 
+def learn(concepts, target): 
+    specific_h = concepts[0].copy() 
+    general_h = [["?" for _ in range(len(specific_h))] for _ in range(len(specific_h))] 
+    for i, h in enumerate(concepts): 
+        if target[i] == "yes": 
+            print(f"\n the {i+1} training instance is Positive \n",concepts[i]) 
+            for x in range(len(specific_h)): 
+                if h[x] != specific_h[x]: 
+                    specific_h[x] = '?' 
+                    general_h[x][x] = '?' 
+        else: 
+            print(f"\nThe {i+1} training instance is Negative \n",concepts[i]) 
+            for x in range(len(specific_h)): 
+                if h[x] != specific_h[x]: 
+                    general_h[x][x] = specific_h[x] 
+                else: 
+                    general_h[x][x] = '?' 
+ 
+        print(f"S{i+1}:\n", specific_h) 
+        print(f"G{i+1}:\n", general_h) 
+ 
+    general_h = [h for h in general_h if h != ['?' for _ in range(len(specific_h))]] 
+    return specific_h, general_h 
+ 
+s_final, g_final = learn(concepts, target) 
+print("\nThe Final Specific Hypothesis:") 
+print(s_final) 
+print("\nThe Final General Hypothesis:") 
+print(g_final)
+
+
+
+
+
+
+
+
+
+
+
+prog3
+import pandas as pd 
+from sklearn.tree import DecisionTreeClassifier 
+from sklearn.model_selection import train_test_split 
+from sklearn.preprocessing import LabelEncoder 
+from sklearn.tree import export_graphviz 
+import graphviz 
+ 
+# Load the dataset 
+data = pd.read_csv('playtennis.csv') 
+df = pd.DataFrame(data) 
+ 
+# Convert categorical variables to numeric using LabelEncoder 
+label_encoder = LabelEncoder() 
+for column in df.columns: 
+    if df[column].dtype == 'object': 
+        df[column] = label_encoder.fit_transform(df[column]) 
+ 
+# Separate features and target variable 
+X = df.drop('PlayTennis', axis=1) 
+y = df['PlayTennis'] 
+ 
+# Split the dataset into training and testing sets 
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) 
+ 
+# Initialize the decision tree classifier 
+clf = DecisionTreeClassifier(criterion='entropy') 
+ 
+# Train the classifier 
+clf.fit(X, y) 
+ 
+# Visualize the decision tree 
+dot_data = export_graphviz(clf, out_file=None, feature_names=X.columns, 
+class_names=label_encoder.classes_, filled=True, rounded=True, 
+special_characters=True, node_ids=True) 
+ 
+graph = graphviz.Source(dot_data) 
+graph.view()
+
+
+
+
+
+
+
+
+
+
+
+
+
+prog4
+import numpy as np 
+X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float)  
+y = np.array(([92], [86], [89]), dtype=float)  
+X = X/np.amax(X, axis=0)     
+y = y/100 
+
+def sigmoid(x): 
+    return 1 / (1 + np.exp(-x)) 
+
+def derivatives_sigmoid(x): 
+    return x * (1 - x) 
+
+epoch = 5000     
+lr = 0.1      
+inputlayer_neurons = 2   
+hiddenlayer_neurons = 3   
+output_neurons = 1    
+
+wh = np.random.uniform(size=(inputlayer_neurons, hiddenlayer_neurons))  
+bh = np.random.uniform(size=(1, hiddenlayer_neurons))  
+wout = np.random.uniform(size=(hiddenlayer_neurons, output_neurons))  
+bout = np.random.uniform(size=(1, output_neurons))  
+
+for i in range(epoch): 
+    hinp1 = np.dot(X, wh) 
+    hinp = hinp1 + bh 
+    hlayer_act = sigmoid(hinp) 
+    outinp1 = np.dot(hlayer_act, wout) 
+    outinp = outinp1 + bout 
+    output = sigmoid(outinp) 
+    EO = y - output 
+    outgrad = derivatives_sigmoid(output) 
+    d_output = EO * outgrad 
+    EH = d_output.dot(wout.T) 
+    hiddengrad = derivatives_sigmoid(hlayer_act) 
+    d_hiddenlayer = EH * hiddengrad 
+    wout += hlayer_act.T.dot(d_output) * lr 
+    wh += X.T.dot(d_hiddenlayer) * lr 
+
+print("Input: \n" + str(X))  
+print("Actual Output: \n" + str(y)) 
+print("Predicted Output: \n", output)
+
+
+
+
+
+
+
+
+
+
+prog5
+import pandas as pd 
+from sklearn.model_selection import train_test_split 
+from sklearn.naive_bayes import GaussianNB 
+from sklearn import metrics 
+
+df = pd.read_csv("pima_indian.csv") 
+
+features = ['num_preg', 'glucose_conc', 'diastolic_bp', 'thickness', 'insulin', 'bmi', 
+'diab_pred', 'age'] 
+target = ['diabetes'] 
+
+X = df[features].values 
+y = df[target].values 
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20) 
+
+print('Total number of Training Data:', y_train.shape) 
+print('Total number of Test Data:', y_test.shape) 
+
+clf = GaussianNB() 
+clf.fit(X_train, y_train) 
+
+predicted = clf.predict(X_test) 
+predict_test_data = clf.predict([[6, 148, 72, 35, 0, 33.6, 0.627, 50]]) 
+
+print('\nConfusion matrix:') 
+print(metrics.confusion_matrix(y_test, predicted)) 
+print('\nAccuracy of the classifier:', metrics.accuracy_score(y_test, predicted)) 
+print('\nPrecision:', metrics.precision_score(y_test, predicted)) 
+print('\nRecall:', metrics.recall_score(y_test, predicted)) 
+print("\nPredicted Value for individual Test Data:", predict_test_data)
+
+
+
+
+
+
+
+
+
+
+
+
+prog6
+import numpy as np 
+import pandas as pd 
+from pgmpy.estimators import MaximumLikelihoodEstimator 
+from pgmpy.models import BayesianNetwork 
+from pgmpy.inference import VariableElimination 
+ 
+heartDisease = pd.read_csv("heart.csv") 
+heartDisease = heartDisease.replace('?',np.nan) 
+ 
+print('Sample instances from the dataset are given below') 
+print(heartDisease.head()) 
+ 
+model= BayesianNetwork([('age','heartdisease'), ('sex','heartdisease'), 
+('exang','heartdisease'), ('cp','heartdisease'), ('heartdisease','restecg'), 
+('heartdisease','chol')]) 
+ 
+print('\n Learning CPD using Maximum likelihood estimators') 
+model.fit(heartDisease,estimator=MaximumLikelihoodEstimator) 
+ 
+print('\n Inferencing with Bayesian Network:') 
+HeartDiseasetest_infer = VariableElimination(model) 
+ 
+print('\n 1. Probability of HeartDisease given evidence= restecg') 
+q1=HeartDiseasetest_infer.query(variables=['heartdisease'],evidence={'restecg':1}) 
+print(q1) 
+ 
+print('\n 2. Probability of HeartDisease given evidence= cp ') 
+q2=HeartDiseasetest_infer.query(variables=['heartdisease'],evidence={'cp':2}) 
+print(q2) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+prog7
+from sklearn import datasets 
+import matplotlib.pyplot as plt 
+from sklearn.cluster import KMeans 
+from sklearn.mixture import GaussianMixture 
+from sklearn.metrics import silhouette_score 
+
+iris = datasets.load_iris() 
+X = iris.data 
+y = iris.target 
+
+kmeans = KMeans(n_clusters=3, random_state=42) 
+kmeans_labels = kmeans.fit_predict(X) 
+kmeans_silhouette = silhouette_score(X, kmeans_labels) 
+
+gmm = GaussianMixture(n_components=3, random_state=42) 
+gmm_labels = gmm.fit_predict(X) 
+gmm_silhouette = silhouette_score(X, gmm_labels) 
+
+print(f"Silhouette Score for k-Means: {kmeans_silhouette}") 
+print(f"Silhouette Score for EM (GMM): {gmm_silhouette}") 
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6)) 
+
+ax1.scatter(X[:, 0], X[:, 1], c=kmeans_labels, cmap='viridis', marker='o', edgecolor='k', s=50) 
+ax1.set_title('k-Means Clustering') 
+
+ax2.scatter(X[:, 0], X[:, 1], c=gmm_labels, cmap='viridis', marker='o', edgecolor='k', s=50) 
+ax2.set_title('EM (GMM) Clustering') 
+
+plt.show()
+
+if kmeans_silhouette > gmm_silhouette: 
+    print("k-Means clustering provides better quality clusters according to the silhouette score.") 
+else: 
+    print("EM (GMM) clustering provides better quality clusters according to the silhouette score.")
+
+
+
+
+
+
+
+
+prog8
+from sklearn.model_selection import train_test_split 
+from sklearn.neighbors import KNeighborsClassifier 
+from sklearn.metrics import classification_report, confusion_matrix 
+from sklearn import datasets 
+import matplotlib.pyplot as plt 
+ 
+# Load the Iris dataset 
+iris = datasets.load_iris() 
+x = iris.data 
+y = iris.target 
+ 
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2) 
+ 
+# Plot the initial clusters 
+plt.figure(figsize=(14, 7)) 
+ 
+# Plot the initial clusters (True labels) 
+plt.scatter(x[:, 0], x[:, 1], c=y, cmap='viridis', marker='o', edgecolor='k') 
+plt.xlabel(iris.feature_names[0]) 
+plt.ylabel(iris.feature_names[1]) 
+plt.title('Initial Clusters with True Labels') 
+plt.show() 
+ 
+#To Training the model and Nearest nighbors K=3 
+classifier = KNeighborsClassifier(n_neighbors=3) 
+classifier.fit(x_train, y_train) 
+ 
+#To make predictions on our test data 
+y_pred=classifier.predict(x_test) 
+ 
+print('Confusion Matrix') 
+print(confusion_matrix(y_test,y_pred)) 
+ 
+print('Accuracy Metrics') 
+print(classification_report(y_test,y_pred))
+
+
+
+
+
+
+
+
+
+
+prog9
+import numpy as np 
+import matplotlib.pyplot as plt 
+ 
+def kernel(x, x_i, tau): 
+    return np.exp(-np.sum((x - x_i)**2) / (2 * tau**2)) 
+ 
+def locally_weighted_regression(X, y, tau): 
+    m = X.shape[0] 
+    y_pred = np.zeros(m) 
+     
+    for i in range(m): 
+        weights = np.array([kernel(X[i], X[j], tau) for j in range(m)]) 
+        W = np.diag(weights) 
+        XTX = X.T @ W @ X 
+        XTX_inv = np.linalg.pinv(XTX) 
+        theta = XTX_inv @ X.T @ W @ y 
+        y_pred[i] = X[i] @ theta 
+     
+    return y_pred 
+ 
+# Generate synthetic dataset 
+np.random.seed(0) 
+X = np.linspace(0, 10, 100) 
+y = np.sin(X) + np.random.normal(scale=0.1, size=X.shape) 
+ 
+# Add a column of ones to include the intercept term 
+X_bias = np.c_[np.ones(X.shape[0]), X] 
+ 
+# Perform Locally Weighted Regression 
+tau = 0.5  # Bandwidth parameter 
+y_pred = locally_weighted_regression(X_bias, y, tau) 
+ 
+# Plot the results 
+plt.scatter(X, y, color='blue', label='Data Points') 
+plt.plot(X, y_pred, color='red', label='LWR Fit') 
+plt.xlabel('X') 
+plt.ylabel('y') 
+plt.title('Locally Weighted Regression') 
+plt.legend() 
 plt.show()
 
 
@@ -29,33 +415,6 @@ plt.show()
 
 
 
-import pandas as pd
-import numpy as np
-import re
-
-# Import the data into a DataFrame
-books_df = pd.read_csv('BL-Flickr-Images-Book.csv')
-
-# Drop irrelevant columns and set the index
-books_df.drop(columns=[
-    'Edition Statement', 'Corporate Author', 'Corporate Contributors', 
-    'Former owner', 'Engraver', 'Contributors', 'Issuance type', 'Shelfmarks'
-], inplace=True)
-books_df.set_index('Identifier', inplace=True)
-
-# Clean date of publication
-books_df['Date of Publication'] = books_df['Date of Publication'].apply(
-    lambda x: re.search(r'\d{4}', x).group() if isinstance(x, str) and re.search(r'\d{4}', x) else np.nan
-)
-
-# Clean place of publication
-books_df['Place of Publication'] = books_df['Place of Publication'].apply(
-    lambda x: 'London' if 'London' in x else 'Oxford' if 'Oxford' in x else 'Unknown'
-)
-
-# Display the cleaned DataFrame
-print("\nCleaned DataFrame:")
-print(books_df.head())
 
 
 
@@ -66,67 +425,34 @@ print(books_df.head())
 
 
 
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline 
 
-# Load the Iris dataset
-iris = load_iris()
-x = iris.data
-y = iris.target
-
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)  # Changed 'X' to 'x'
-
-# Create a pipeline with standardization and logistic regression 
-model = make_pipeline(StandardScaler(), LogisticRegression(C=1e4))
-
-# Train the model
-model.fit(X_train, y_train)
-
-# Report the training accuracy
-training_accuracy = model.score(X_train, y_train) 
-print(f"Training Accuracy: {training_accuracy}")
-
-# Report the testing accuracy
-testing_accuracy = model.score(X_test, y_test)
-print(f"Testing Accuracy: {testing_accuracy}")
-
-
-
-
-
-
-
-
-import numpy as np
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
+prog10
+import numpy as np 
+import matplotlib.pyplot as plt 
+from sklearn import datasets 
+from sklearn.model_selection import train_test_split 
 from sklearn.svm import SVC 
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score 
+from sklearn.decomposition import PCA 
+ 
 
-# Load the Iris dataset and split it
-X, y = load_iris(return_X_y=True)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+iris = datasets.load_iris() 
+X = iris.data 
+y = iris.target 
+ 
 
-# Define hyperparameters
-hyperparams = [(0.5, C) for C in [0.01, 1, 10]]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) 
 
-# Initialize variables for best accuracy
-best_accuracy, best_support_vectors = 0, None
 
-# Iterate over hyperparameters
-for gamma, C in hyperparams:
-    model = SVC(kernel='rbf', gamma=gamma, C=C)
-    model.fit(X_train, y_train)
-    
-    accuracy = model.score(X_test, y_test)
-    total_support_vectors = np.sum(model.n_support_)
-    
-    if accuracy > best_accuracy:
-        best_accuracy, best_support_vectors = accuracy, total_support_vectors
-    
-    print(f"Gamma: {gamma}, C: {C}, Accuracy: {accuracy:.3f}, Total Support Vectors: {total_support_vectors}")
+svm_classifier = SVC(kernel='linear', C=1.0, random_state=42) 
+svm_classifier.fit(X_train, y_train) 
+ 
 
-print(f"\nBest Accuracy: {best_accuracy:.3f}, Total Support Vectors: {best_support_vectors}")
+y_pred = svm_classifier.predict(X_test) 
+ 
+
+print("Confusion Matrix:") 
+print(confusion_matrix(y_test, y_pred)) 
+print("\nClassification Report:") 
+print(classification_report(y_test, y_pred)) 
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.2f}")
