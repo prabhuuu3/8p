@@ -1,21 +1,114 @@
-CREATE TABLE salesman (salesman_id INT PRIMARY KEY, name VARCHAR(20), city VARCHAR(20), commission INT);
-CREATE TABLE customer(customer_id INT PRIMARY KEY, customer_name VARCHAR(40), customer_city VARCHAR(50), grade INT, salesman_id INT, FOREIGN KEY (salesman_id) REFERENCES salesman(salesman_id) ON DELETE CASCADE);
-CREATE TABLE orders (ord_no INT PRIMARY KEY, purchase_amt INTEGER NOT NULL, ord_date DATE NOT NULL, customer_id INT, salesman_id INT, FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE, FOREIGN KEY (salesman_id) REFERENCES salesman(salesman_id) ON DELETE CASCADE);
+import numpy as np
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import SGDClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+
+mnist = fetch_openml('mnist_784', version=1)
+X, y = mnist["data"], mnist["target"]
+
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X.astype(np.float64))
+
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+sgd_clf = SGDClassifier(random_state=42)
+
+
+sgd_clf.fit(X_train, y_train)
+
+
+y_pred = sgd_clf.predict(X_test)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
 
 
 
--- INSERT statements for SALESMAN table
-INSERT INTO SALESMAN VALUES (1000, 'RAJ', 'BENGALURU', 50), (2000, 'ASHWIN', 'TUMKUR', 30), (3000, 'BINDU', 'MUMBAI', 40), (4000, 'LAVANYA', 'BENGALURU', 40), (5000, 'ROHIT', 'MYSORE', 60);
-
--- INSERT statements for CUSTOMER table
-INSERT INTO CUSTOMER VALUES (11, 'INFOSYS', 'BENGALURU', 5, 1000), (22, 'TCS', 'BENGALURU', 4, 2000), (33, 'WIPRO', 'MYSORE', 7, 1000), (44, 'TCS', 'MYSORE', 6, 2000), (55, 'ORACLE', 'TUMKUR', 3, 3000);
-
--- INSERT statements for ORDERS table
-INSERT INTO ORDERS VALUES (1, 200000, '2016-04-12', 11, 1000), (2, 300000, '2016-04-12', 11, 2000), (3, 400000, '2017-04-15', 22, 1000);
 
 
 
 
-select count(customer_id) from customer where grade>(select avg(grade) from customer where customer_city like '%BENGALURU');
-select name,count(customer_id) from salesman s,customer c where s.salesman_id=c.salesman_id group by name having count(customer_id)>1;
-select name from customer c,salesman s where s.salesman_id=c.salesman_id and s.city=c.customer_city union select name from salesman where salesman_id not in (select s1.salesman_id from salesman s1,customer c1 where s1.salesman_id=c1.salesman_id and s1.city=c1.customer_city);
+
+
+
+
+prog2
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+
+iris = load_iris()
+X, y = iris.data, iris.target
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+gb_clf = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
+
+
+gb_clf.fit(X_train, y_train)
+
+
+y_pred = gb_clf.predict(X_test)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+prog3
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+
+iris = load_iris()
+X, y = iris.data, iris.target
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+log_reg = LogisticRegression(max_iter=200)
+
+log_reg.fit(X_train, y_train)
+
+y_pred = log_reg.predict(X_test)
+
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
